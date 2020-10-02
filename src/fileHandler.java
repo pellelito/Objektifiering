@@ -11,14 +11,12 @@ import java.util.List;
 import com.google.gson.Gson;
 import com.google.gson.JsonIOException;
 
-
-
 public class fileHandler {
 	static File file = new File("src/books.csv");
 	static Gson gson = new Gson();
-	static List<Book> books = new ArrayList<>();
+	static List<Book> books = new ArrayList<Book>();
 	
-	public static void openFile() throws IOException {
+	public static void openFile() throws IOException, InterruptedException {
 
 		file.getParentFile().mkdirs(); // Will create parent directories if not exists
 		try {
@@ -35,7 +33,7 @@ public class fileHandler {
 		//will write to file
 		FileWriter writer = new FileWriter(file);
 		books.add(newBook);	
-		
+		arrayHandler.sortList();
 		books.forEach((n) -> {
 			try {
 				writer.write(n.toString());
@@ -48,7 +46,7 @@ public class fileHandler {
         writer.close(); 
 	}
 	
-	public static List<Book> readBooksFromCSV(String fileName) { 
+	public static List<Book> readBooksFromCSV(String fileName) throws InterruptedException { 
 		
 		 
 		Path pathToFile = Paths.get(fileName); 
@@ -62,8 +60,8 @@ public class fileHandler {
 			while (line != null) { 
 				
 				// use string.split to load a string array with the values from 
-				// each line of 
-				// the file, using a comma as the delimiter 
+				// each line of the file, using a comma as the delimiter
+			 
 				String[] attributes = line.split(",");
 				
 				Book book = createBook(attributes); 
@@ -71,7 +69,7 @@ public class fileHandler {
 				// adding book into ArrayList 
 				books.add(book);
 				
-				System.out.println(book.toString());
+				//System.out.println(book.toString());
 				// read next line before looping 
 				// if end of file reached, line would be null 
 				line = br.readLine(); 
@@ -79,7 +77,8 @@ public class fileHandler {
 				} 
 			} catch (IOException ioe) { ioe.printStackTrace(); 
 		} 
-		
+		//Sort my arraylist
+		arrayHandler.sortList();
 		return books;			
 		}
 		
@@ -88,9 +87,9 @@ public class fileHandler {
 			String name = metadata[0]; 
 			int price = Integer.parseInt(metadata[1]); 	
 			String author = metadata[2]; 
-			String cover = metadata[3];
+			String ID = metadata[3];
 
-			return new Book(name, price, author, cover); 
+			return new Book(name, price, author, ID); 
 			}
 			
 

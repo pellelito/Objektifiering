@@ -9,9 +9,11 @@ public class Main {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
+					
+					fileHandler.openFile();
 					Home frame = new Home();
 					frame.setVisible(true);
-					fileHandler.openFile();
+					
 				} catch (Exception e) {
 					e.printStackTrace();
 				}

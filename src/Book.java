@@ -1,16 +1,17 @@
+import java.util.Comparator;
 
 public class Book {
 
 		private String title; 
 		private int price; 
 		private String author; 
-		private String cover;
+		private String ID;
 		
-		public Book(String title, int price, String author, String cover) { 
+		public Book(String title, int price, String author, String ID) { 
 			this.title = title; 
 			this.price = price; 
 			this.author = author; 
-			this.cover = cover;
+			this.ID = ID;
 			} 
 		public String getTitle() { 
 			return title; 
@@ -30,15 +31,15 @@ public class Book {
 		public void setAuthor(String author) { 
 			this.author = author; 
 			} 
-		public String getCover() { 
-			return cover; 
+		public String getID() { 
+			return ID; 
 			} 
-		public void setCover(String cover) { 
-			this.cover = cover; 
+		public void setID(String ID) { 
+			this.ID = ID; 
 			} 
 		  @Override public String toString() { 
-			return  title + "," + price + "," + author + "," + cover + "\n"; 
+			return  title + "," + price + "," + author + "," + ID + "\n"; 
 			} 
+		  
 		}
-
 

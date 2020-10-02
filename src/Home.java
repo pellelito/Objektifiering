@@ -1,5 +1,3 @@
-import java.awt.EventQueue;
-
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import java.awt.Color;
@@ -10,15 +8,15 @@ import javax.swing.JOptionPane;
 import javax.swing.JComboBox;
 import javax.swing.JToggleButton;
 import javax.swing.border.EtchedBorder;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.util.UUID;
 import java.awt.event.ActionEvent;
 import javax.swing.event.ChangeListener;
-
 import com.google.gson.JsonIOException;
-
 import javax.swing.event.ChangeEvent;
 
 public class Home extends JFrame {
@@ -27,13 +25,12 @@ public class Home extends JFrame {
 	private JTextField textTitle;
 	private JTextField textAuthor;
 	private JTextField textPrice;
-	private JTextField textCover;
-
+	private int  changeID;
 	
-
 	/**
 	 * Create the frame.
 	 */
+	
 	public Home() {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 857, 506);
@@ -70,26 +67,59 @@ public class Home extends JFrame {
 		textPrice.setBounds(462, 168, 287, 26);
 		contentPane.add(textPrice);
 		
-		JLabel lblShowCover = new JLabel("No Cover");
-		lblShowCover.setBounds(472, 234, 268, 153);
-		contentPane.add(lblShowCover);
+
 		
-		JComboBox cmbList = new JComboBox();
+		JComboBox<Book> cmbList = new JComboBox<Book>();
+		cmbList.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				
+				String[] choice = (cmbList.getSelectedItem().toString().split(","));
+				textTitle.setText(choice[0]);
+				textPrice.setText(choice[1]);
+				textAuthor.setText(choice[2]);
+				changeID = cmbList.getSelectedIndex();
+			}
+		});
+		cmbList.setModel(new DefaultComboBoxModel<Book>(fileHandler.books.toArray(new Book[0])));
 		cmbList.setBounds(462, 41, 287, 27);
 		contentPane.add(cmbList);
+
 		
 		JToggleButton tglbtnEdit = new JToggleButton("Edit");
-		tglbtnEdit.addChangeListener(new ChangeListener() {
-			public void stateChanged(ChangeEvent e) {
-				if (tglbtnEdit.isSelected())  
+		tglbtnEdit.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if (tglbtnEdit.isSelected()) {  
 					setEditble();  
-		        else  
-		        	unSetEditble();  
-		    }  
-			}
-		);
+					
+				}else {
+		        	unSetEditble();
+					
+					//Trigger save
+					boolean valid = checkInput();
+					if (valid) {
+						String ID  = UUID.randomUUID().toString();
+						//remove old book
+						fileHandler.books.remove(changeID);
+						//System.out.println("check");
+						//add changes as new book
+						Book newBook = new Book(textTitle.getText(),Integer.parseInt(textPrice.getText().trim()),textAuthor.getText(),ID);
+						unSetEditble();
+						clearText();
+						
+						try {
+							fileHandler.writeToFile(newBook);
+						} catch (JsonIOException e1) {
+							e1.printStackTrace();
+						} catch (IOException e1) {
+							e1.printStackTrace();
+						}
+						cmbList.setModel(new DefaultComboBoxModel<Book>(fileHandler.books.toArray(new Book[0])));
+					}
+		        }	
+		    }
+		});
 		
-		tglbtnEdit.setBounds(776, 449, 75, 29);
+		tglbtnEdit.setBounds(731, 373, 75, 29);
 		contentPane.add(tglbtnEdit);
 		
 		JLabel lblBook = new JLabel("Book:");
@@ -107,16 +137,7 @@ public class Home extends JFrame {
 		JLabel lblPrice = new JLabel("Price:");
 		lblPrice.setBounds(342, 173, 61, 16);
 		contentPane.add(lblPrice);
-		
-		textCover = new JTextField();
-		textCover.setEditable(false);
-		textCover.setColumns(10);
-		textCover.setBounds(462, 196, 287, 26);
-		contentPane.add(textCover);
-		
-		JLabel lblCover = new JLabel("Cover:");
-		lblCover.setBounds(342, 201, 61, 16);
-		contentPane.add(lblCover);
+
 		
 		JButton btnAddNew = new JButton("Add new");
 		btnAddNew.addActionListener(new ActionListener() {
@@ -126,13 +147,14 @@ public class Home extends JFrame {
 			}
 			
 		});
-		btnAddNew.setBounds(262, 449, 117, 29);
+		btnAddNew.setBounds(266, 409, 88, 29);
 		contentPane.add(btnAddNew);
 		
 		JButton btnSave = new JButton("Save");
 		btnSave.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				
+				//Won't work with commas in title or name
 				String title = textTitle.getText();
 				String author = textAuthor.getText();
 				int price = 0;
@@ -145,30 +167,30 @@ public class Home extends JFrame {
 				  //If number is not integer,you will get exception and exception message will be printed
 				  System.out.println(e1.getMessage());
 				}			
-				String cover = textCover.getText();
+				String ID  = UUID.randomUUID().toString();
 				
 				//create new book
 				boolean valid = checkInput();
 				if (valid) {
 					
-					Book newBook = new Book(title,price,author,cover);
+					Book newBook = new Book(title,price,author,ID);
+				
 					unSetEditble();
 					clearText();
+					
 					try {
 						fileHandler.writeToFile(newBook);
 					} catch (JsonIOException e1) {
-						// TODO Auto-generated catch block
 						e1.printStackTrace();
 					} catch (IOException e1) {
-						// TODO Auto-generated catch block
 						e1.printStackTrace();
 					}
-					//System.out.println(newBook.toString());
+					cmbList.setModel(new DefaultComboBoxModel<Book>(fileHandler.books.toArray(new Book[0])));
 				}
 				
 			}
 		});
-		btnSave.setBounds(374, 449, 117, 29);
+		btnSave.setBounds(356, 409, 88, 29);
 		contentPane.add(btnSave);
 		
 		JButton btnCancel = new JButton("Cancel");
@@ -178,8 +200,21 @@ public class Home extends JFrame {
 				clearText();
 			}
 		});
-		btnCancel.setBounds(487, 449, 117, 29);
+		btnCancel.setBounds(446, 409, 88, 29);
 		contentPane.add(btnCancel);
+		
+		JButton btnDelete = new JButton("Delete");
+		btnDelete.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				
+					//remove book
+					//fileHandler.books.remove(changeID);	
+			}
+		});
+		btnDelete.setBounds(731, 409, 75, 29);
+		contentPane.add(btnDelete);
+		
+		
 	}
 	//makes the text fields editble
 	public void setEditble() {	
@@ -187,24 +222,24 @@ public class Home extends JFrame {
 		textTitle.requestFocus();
 		textAuthor.setEditable(true);
 		textPrice.setEditable(true);
-		textCover.setEditable(true);	
+		
 	}
 	//makes the text fields uneditble
 	public void unSetEditble() {	
 		textTitle.setEditable(false);
 		textAuthor.setEditable(false);
 		textPrice.setEditable(false);
-		textCover.setEditable(false);
+	
 	}
 	//clears all text fields
 	public void clearText() {
 		textTitle.setText("");
-		textTitle.setBackground(Color.white);
+		textTitle.setBackground(null);
 		textAuthor.setText("");
-		textAuthor.setBackground(Color.white);
+		textAuthor.setBackground(null);
 		textPrice.setText("");
-		textPrice.setBackground(Color.white);
-		textCover.setText("");
+		textPrice.setBackground(null);
+		
 	}
 	public boolean checkInput() {
 		
