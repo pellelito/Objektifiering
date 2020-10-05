@@ -119,7 +119,7 @@ public class Home extends JFrame {
 		    }
 		});
 		
-		tglbtnEdit.setBounds(731, 373, 75, 29);
+		tglbtnEdit.setBounds(707, 409, 75, 29);
 		contentPane.add(tglbtnEdit);
 		
 		JLabel lblBook = new JLabel("Book:");
@@ -202,17 +202,6 @@ public class Home extends JFrame {
 		});
 		btnCancel.setBounds(446, 409, 88, 29);
 		contentPane.add(btnCancel);
-		
-		JButton btnDelete = new JButton("Delete");
-		btnDelete.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				
-					//remove book
-					//fileHandler.books.remove(changeID);	
-			}
-		});
-		btnDelete.setBounds(731, 409, 75, 29);
-		contentPane.add(btnDelete);
 		
 		
 	}
