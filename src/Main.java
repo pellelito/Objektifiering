@@ -9,7 +9,6 @@ public class Main {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					
 					fileHandler.openFile();
 					Home frame = new Home();
 					frame.setVisible(true);

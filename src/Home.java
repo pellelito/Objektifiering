@@ -8,6 +8,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JComboBox;
 import javax.swing.JToggleButton;
 import javax.swing.border.EtchedBorder;
+import javax.swing.ButtonGroup;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -18,6 +19,7 @@ import java.awt.event.ActionEvent;
 import javax.swing.event.ChangeListener;
 import com.google.gson.JsonIOException;
 import javax.swing.event.ChangeEvent;
+import javax.swing.JRadioButton;
 
 public class Home extends JFrame {
 
@@ -26,6 +28,8 @@ public class Home extends JFrame {
 	private JTextField textAuthor;
 	private JTextField textPrice;
 	private int  changeID;
+	private String id;
+	private boolean checked = true;
 	
 	/**
 	 * Create the frame.
@@ -77,6 +81,7 @@ public class Home extends JFrame {
 				textTitle.setText(choice[0]);
 				textPrice.setText(choice[1]);
 				textAuthor.setText(choice[2]);
+				id = choice[3];
 				changeID = cmbList.getSelectedIndex();
 			}
 		});
@@ -89,37 +94,44 @@ public class Home extends JFrame {
 		tglbtnEdit.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if (tglbtnEdit.isSelected()) {  
-					setEditble();  
-					
+					setEditble();  		
 				}else {
-		        	unSetEditble();
-					
+		        	unSetEditble();				
 					//Trigger save
 					boolean valid = checkInput();
 					if (valid) {
-						String ID  = UUID.randomUUID().toString();
+						
 						//remove old book
 						fileHandler.books.remove(changeID);
-						//System.out.println("check");
-						//add changes as new book
-						Book newBook = new Book(textTitle.getText(),Integer.parseInt(textPrice.getText().trim()),textAuthor.getText(),ID);
-						unSetEditble();
-						clearText();
 						
+						
+						
+						//add changes as new book
+						Book newBook = new Book(textTitle.getText().replace(",","." ),Integer.parseInt(textPrice.getText().trim()),textAuthor.getText().replace(",","." ),id);
+	
 						try {
-							fileHandler.writeToFile(newBook);
+							//fileHandler.books.set(changeID, newBook );
+							fileHandler.addBookToArray(newBook);
+							if (checked == true) {
+								arrayHandler.sortList();
+							}else {
+								arrayHandler.sortListByAuthor();
+							}
+							fileHandler.writeToFile();
 						} catch (JsonIOException e1) {
 							e1.printStackTrace();
 						} catch (IOException e1) {
 							e1.printStackTrace();
 						}
 						cmbList.setModel(new DefaultComboBoxModel<Book>(fileHandler.books.toArray(new Book[0])));
+						unSetEditble();
+						clearText();
 					}
 		        }	
 		    }
 		});
 		
-		tglbtnEdit.setBounds(707, 409, 75, 29);
+		tglbtnEdit.setBounds(705, 372, 75, 29);
 		contentPane.add(tglbtnEdit);
 		
 		JLabel lblBook = new JLabel("Book:");
@@ -155,8 +167,8 @@ public class Home extends JFrame {
 			public void actionPerformed(ActionEvent e) {
 				
 				//Won't work with commas in title or name
-				String title = textTitle.getText();
-				String author = textAuthor.getText();
+				String title = textTitle.getText().replace(",","." );
+				String author = textAuthor.getText().replace(",","." );
 				int price = 0;
 				try
 				{
@@ -179,13 +191,20 @@ public class Home extends JFrame {
 					clearText();
 					
 					try {
-						fileHandler.writeToFile(newBook);
+						fileHandler.addBookToArray(newBook);
+						if (checked == true) {
+							arrayHandler.sortList();
+						}else {
+							arrayHandler.sortListByAuthor();
+						}
+						fileHandler.writeToFile();
+						cmbList.setModel(new DefaultComboBoxModel<Book>(fileHandler.books.toArray(new Book[0])));
 					} catch (JsonIOException e1) {
 						e1.printStackTrace();
 					} catch (IOException e1) {
 						e1.printStackTrace();
 					}
-					cmbList.setModel(new DefaultComboBoxModel<Book>(fileHandler.books.toArray(new Book[0])));
+					
 				}
 				
 			}
@@ -198,10 +217,72 @@ public class Home extends JFrame {
 			public void actionPerformed(ActionEvent e) {
 				unSetEditble();
 				clearText();
+				tglbtnEdit.setSelected(false);
 			}
 		});
 		btnCancel.setBounds(446, 409, 88, 29);
 		contentPane.add(btnCancel);
+		
+		JButton btnDelete = new JButton("Delete");
+		btnDelete.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if(changeID > -1 ){
+					try {
+						fileHandler.books.remove(changeID);
+						if (checked == true) {
+							arrayHandler.sortList();
+						}else {
+							arrayHandler.sortListByAuthor();
+						}
+						fileHandler.writeToFile();
+						unSetEditble();
+						clearText();
+						cmbList.setModel(new DefaultComboBoxModel<Book>(fileHandler.books.toArray(new Book[0])));
+					} catch (JsonIOException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					} catch (IOException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+					}
+				}
+		});
+		btnDelete.setBounds(705, 412, 75, 29);
+		contentPane.add(btnDelete);
+		
+		ButtonGroup group = new ButtonGroup();
+	
+		JRadioButton rdbtnSortByTitle = new JRadioButton("Title");
+		group.add(rdbtnSortByTitle);
+		rdbtnSortByTitle.setSelected(true);
+		rdbtnSortByTitle.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				checked = true;
+				unSetEditble();
+				clearText();
+				tglbtnEdit.setSelected(false);
+				arrayHandler.sortList();
+				cmbList.setModel(new DefaultComboBoxModel<Book>(fileHandler.books.toArray(new Book[0])));
+			}	
+		});
+		rdbtnSortByTitle.setBounds(755, 38, 109, 23);
+		contentPane.add(rdbtnSortByTitle);
+		
+		JRadioButton rdbtnSortByAuthor = new JRadioButton("Author");
+		group.add(rdbtnSortByAuthor);
+		rdbtnSortByAuthor.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				checked = false;
+				unSetEditble();
+				clearText();
+				tglbtnEdit.setSelected(false);
+				arrayHandler.sortListByAuthor();
+				cmbList.setModel(new DefaultComboBoxModel<Book>(fileHandler.books.toArray(new Book[0])));
+			}
+		});
+		rdbtnSortByAuthor.setBounds(755, 64, 109, 23);
+		contentPane.add(rdbtnSortByAuthor);
 		
 		
 	}
@@ -218,7 +299,8 @@ public class Home extends JFrame {
 		textTitle.setEditable(false);
 		textAuthor.setEditable(false);
 		textPrice.setEditable(false);
-	
+		//changeID = -1;
+		
 	}
 	//clears all text fields
 	public void clearText() {

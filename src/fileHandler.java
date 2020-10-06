@@ -12,28 +12,25 @@ import com.google.gson.Gson;
 import com.google.gson.JsonIOException;
 
 public class fileHandler {
-	static File file = new File("src/books.csv");
+	static File file = new File("books.csv");
 	static Gson gson = new Gson();
 	static List<Book> books = new ArrayList<Book>();
 	
 	public static void openFile() throws IOException, InterruptedException {
 
-		file.getParentFile().mkdirs(); // Will create parent directories if not exists
 		try {
 			file.createNewFile();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	
-		readBooksFromCSV("src/books.csv");
+		readBooksFromCSV("books.csv");
 		
 	}
 	
-	public static void writeToFile(Book newBook) throws JsonIOException, IOException {
+	public static void writeToFile() throws JsonIOException, IOException {
 		//will write to file
 		FileWriter writer = new FileWriter(file);
-		books.add(newBook);	
-		arrayHandler.sortList();
 		books.forEach((n) -> {
 			try {
 				writer.write(n.toString());
@@ -67,9 +64,7 @@ public class fileHandler {
 				Book book = createBook(attributes); 
 				
 				// adding book into ArrayList 
-				books.add(book);
-				
-				//System.out.println(book.toString());
+				addBookToArray(book);
 				// read next line before looping 
 				// if end of file reached, line would be null 
 				line = br.readLine(); 
@@ -80,6 +75,10 @@ public class fileHandler {
 		//Sort my arraylist
 		arrayHandler.sortList();
 		return books;			
+		}
+	
+		public static void addBookToArray(Book book) {
+			books.add(book);
 		}
 		
 		private static Book createBook(String[] metadata) { 
