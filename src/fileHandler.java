@@ -32,10 +32,11 @@ public class fileHandler {
 		//will write to file
 		FileWriter writer = new FileWriter(file);
 		books.forEach((n) -> {
+			
 			try {
 				writer.write(n.toString());
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
+				// do something
 				e.printStackTrace();
 			}
 		});
@@ -59,8 +60,7 @@ public class fileHandler {
 				// use string.split to load a string array with the values from 
 				// each line of the file, using a comma as the delimiter
 			 
-				String[] attributes = line.split(",");
-				
+				String[] attributes = line.split(",");		
 				Book book = createBook(attributes); 
 				
 				// adding book into ArrayList 
@@ -81,6 +81,7 @@ public class fileHandler {
 			books.add(book);
 		}
 		
+		//creates a new book for library
 		private static Book createBook(String[] metadata) { 
 			// create and return book of this metadata
 			String name = metadata[0]; 

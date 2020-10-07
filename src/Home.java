@@ -36,6 +36,7 @@ public class Home extends JFrame {
 	 */
 	
 	public Home() {
+		//builds the UI 
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 857, 506);
 		contentPane = new JPanel();
@@ -72,7 +73,7 @@ public class Home extends JFrame {
 		contentPane.add(textPrice);
 		
 
-		
+		//Updates text fields when user select in list
 		JComboBox<Book> cmbList = new JComboBox<Book>();
 		cmbList.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -81,7 +82,7 @@ public class Home extends JFrame {
 				textTitle.setText(choice[0]);
 				textPrice.setText(choice[1]);
 				textAuthor.setText(choice[2]);
-				id = choice[3];
+				id = choice[3].substring(0, choice[3].length() - 1);
 				changeID = cmbList.getSelectedIndex();
 			}
 		});
@@ -89,40 +90,46 @@ public class Home extends JFrame {
 		cmbList.setBounds(462, 41, 287, 27);
 		contentPane.add(cmbList);
 
-		
+		// enables for user editing
 		JToggleButton tglbtnEdit = new JToggleButton("Edit");
 		tglbtnEdit.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if (tglbtnEdit.isSelected()) {  
 					setEditble();  		
-				}else {
-		        	unSetEditble();				
+				}else {		
+					
 					//Trigger save
 					boolean valid = checkInput();
 					if (valid) {
 						
-						//remove old book
-						fileHandler.books.remove(changeID);
-						
-						
-						
-						//add changes as new book
+						//add changes to book
 						Book newBook = new Book(textTitle.getText().replace(",","." ),Integer.parseInt(textPrice.getText().trim()),textAuthor.getText().replace(",","." ),id);
-	
+						
 						try {
-							//fileHandler.books.set(changeID, newBook );
-							fileHandler.addBookToArray(newBook);
+							fileHandler.books.set(changeID, newBook); 
+							
+							try {
+								fileHandler.writeToFile();
+							} catch (JsonIOException e1) {
+								
+								// do something
+								e1.printStackTrace();
+							} catch (IOException e1) {
+								
+								// do something
+								e1.printStackTrace();
+							}
+							
+							// sorts list to user preference
 							if (checked == true) {
 								arrayHandler.sortList();
 							}else {
 								arrayHandler.sortListByAuthor();
 							}
-							fileHandler.writeToFile();
 						} catch (JsonIOException e1) {
 							e1.printStackTrace();
-						} catch (IOException e1) {
-							e1.printStackTrace();
 						}
+						//refreshes the combolist
 						cmbList.setModel(new DefaultComboBoxModel<Book>(fileHandler.books.toArray(new Book[0])));
 						unSetEditble();
 						clearText();
@@ -134,6 +141,7 @@ public class Home extends JFrame {
 		tglbtnEdit.setBounds(705, 372, 75, 29);
 		contentPane.add(tglbtnEdit);
 		
+		//just some labels
 		JLabel lblBook = new JLabel("Book:");
 		lblBook.setBounds(342, 45, 61, 16);
 		contentPane.add(lblBook);
@@ -150,7 +158,7 @@ public class Home extends JFrame {
 		lblPrice.setBounds(342, 173, 61, 16);
 		contentPane.add(lblPrice);
 
-		
+		// lets the user add a new book to library
 		JButton btnAddNew = new JButton("Add new");
 		btnAddNew.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -166,38 +174,46 @@ public class Home extends JFrame {
 		btnSave.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				
-				//Won't work with commas in title or name
+				//Replaces commas for the CSV file
 				String title = textTitle.getText().replace(",","." );
 				String author = textAuthor.getText().replace(",","." );
 				int price = 0;
 				try
-				{
+				{	
+					// tries to make an int of user input, otherwise error and price will set to 0
 				    price = Integer.parseInt(textPrice.getText());
 				}
 				catch(NumberFormatException e1)
 				{
-				  //If number is not integer,you will get exception and exception message will be printed
+				  
+					//If number is not integer,you will get exception and exception message will be printed
 				  System.out.println(e1.getMessage());
-				}			
+				}
+				
+				//sets an unique ID to book or entry, useless at the moment but handy when scale up
 				String ID  = UUID.randomUUID().toString();
 				
 				//create new book
 				boolean valid = checkInput();
 				if (valid) {
 					
-					Book newBook = new Book(title,price,author,ID);
-				
+					Book newBook = new Book(title,price,author,ID);				
 					unSetEditble();
 					clearText();
 					
-					try {
+					try { 
+						
+						//adds to arraylist and updates the file
 						fileHandler.addBookToArray(newBook);
+						fileHandler.writeToFile();
+						
 						if (checked == true) {
 							arrayHandler.sortList();
 						}else {
 							arrayHandler.sortListByAuthor();
 						}
-						fileHandler.writeToFile();
+						
+						//updates the combolist as well
 						cmbList.setModel(new DefaultComboBoxModel<Book>(fileHandler.books.toArray(new Book[0])));
 					} catch (JsonIOException e1) {
 						e1.printStackTrace();
@@ -212,6 +228,7 @@ public class Home extends JFrame {
 		btnSave.setBounds(356, 409, 88, 29);
 		contentPane.add(btnSave);
 		
+		// cancel function
 		JButton btnCancel = new JButton("Cancel");
 		btnCancel.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -223,6 +240,7 @@ public class Home extends JFrame {
 		btnCancel.setBounds(446, 409, 88, 29);
 		contentPane.add(btnCancel);
 		
+		// delete function
 		JButton btnDelete = new JButton("Delete");
 		btnDelete.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -251,8 +269,10 @@ public class Home extends JFrame {
 		btnDelete.setBounds(705, 412, 75, 29);
 		contentPane.add(btnDelete);
 		
+		//new group for radio buttons
 		ButtonGroup group = new ButtonGroup();
-	
+		
+		// enables list sorted by title
 		JRadioButton rdbtnSortByTitle = new JRadioButton("Title");
 		group.add(rdbtnSortByTitle);
 		rdbtnSortByTitle.setSelected(true);
@@ -269,6 +289,7 @@ public class Home extends JFrame {
 		rdbtnSortByTitle.setBounds(755, 38, 109, 23);
 		contentPane.add(rdbtnSortByTitle);
 		
+		// enables list sorted by author
 		JRadioButton rdbtnSortByAuthor = new JRadioButton("Author");
 		group.add(rdbtnSortByAuthor);
 		rdbtnSortByAuthor.addActionListener(new ActionListener() {
@@ -286,6 +307,7 @@ public class Home extends JFrame {
 		
 		
 	}
+	
 	//makes the text fields editble
 	public void setEditble() {	
 		textTitle.setEditable(true);
@@ -294,14 +316,16 @@ public class Home extends JFrame {
 		textPrice.setEditable(true);
 		
 	}
+	
 	//makes the text fields uneditble
 	public void unSetEditble() {	
 		textTitle.setEditable(false);
 		textAuthor.setEditable(false);
 		textPrice.setEditable(false);
-		//changeID = -1;
+		changeID = -1;
 		
 	}
+	
 	//clears all text fields
 	public void clearText() {
 		textTitle.setText("");
@@ -312,6 +336,8 @@ public class Home extends JFrame {
 		textPrice.setBackground(null);
 		
 	}
+	
+	// check that all required fields are filled in
 	public boolean checkInput() {
 		
 		StringBuilder errorText = new StringBuilder();
